@@ -1,53 +1,61 @@
+const express = require('express');
+const morgan = require('morgan');
+require('dotenv').config();
+
+const api = require('./api');
+
+const app = express();
+const port = process.env.PORT || 8000;
+
+const mongoose = require('mongoose');
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://rootuser:rootpass@localhost:27017/tarpaulindb?authSource=admin'
+
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+
+mongoose.connection.on('connected', () => {
+  console.log('Connected to MongoDB')
+})
+
+mongoose.connection.on('error', (err) => {
+  console.log('Error connecting to MongoDB', err)
+})
+
 /*
- * This require() statement reads environment variable values from the file
- * called .env in the project directory.  You can set up the environment
- * variables in that file to specify connection information for your own DB
- * server.
+ * Morgan is a popular request logger.
  */
-require('dotenv').config()
+app.use(morgan('dev'));
 
-const express = require('express')
-const morgan = require('morgan')
-
-const api = require('./api')
-const { connectToDb } = require('./lib/mongo')
-
-const app = express()
-const port = process.env.PORT || 8000
-
-/*
- * Morgan is a popular logger.
- */
-app.use(morgan('dev'))
-
-app.use(express.json())
+app.use(express.json());
+app.use(express.static('public'));
 
 /*
  * All routes for the API are written in modules in the api/ directory.  The
  * top-level router lives in api/index.js.  That's what we include here, and
  * it provides all of the routes.
  */
-app.use('/', api)
+app.use('/', api);
 
 app.use('*', function (req, res, next) {
-    res.status(404).json({
-        error: "Requested resource " + req.originalUrl + " does not exist"
-    })
-})
+  res.status(404).json({
+    error: "Requested resource " + req.originalUrl + " does not exist"
+  });
+});
 
 /*
  * This route will catch any errors thrown from our API endpoints and return
  * a response with a 500 status to the client.
  */
 app.use('*', function (err, req, res, next) {
-    console.error("== Error:", err)
-    res.status(500).send({
-        err: "Server error.  Please try again later."
-    })
+  console.error("== Error:", err)
+  res.status(500).send({
+      err: "Server error.  Please try again later."
+  })
 })
 
-connectToDb(function () {
-    app.listen(port, function () {
-        console.log("== Server is running on port", port)
-    })
-})
+app.listen(port, function() {
+  console.log("== Server is running on port", port);
+});
