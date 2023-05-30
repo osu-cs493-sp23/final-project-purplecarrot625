@@ -1,0 +1,23 @@
+[
+    {
+      "assignmentId": "123",
+      "studentId": "123",
+      "timestamp": "2022-06-14T17:00:00-07:00",
+      "grade": 94.5,
+      "file": "https://example.com/submission/file1"
+    },
+    {
+      "assignmentId": "456",
+      "studentId": "456",
+      "timestamp": "2022-07-14T17:00:00-07:00",
+      "grade": 85.0,
+      "file": "https://example.com/submission/file2"
+    },
+    {
+      "assignmentId": "789",
+      "studentId": "789",
+      "timestamp": "2022-08-14T17:00:00-07:00",
+      "grade": 70.5,
+      "file": "https://example.com/submission/file3"
+    }
+]
