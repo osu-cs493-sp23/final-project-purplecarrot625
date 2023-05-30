@@ -5,28 +5,24 @@ const UserSchema = new Schema({
   name: {
     type: String,
     required: true,
-    trim: true,
-    example: "Jane Doe",
+    trim: true
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    example: "doej@oregonstate.edu",
+    trim: true
   },
   password: {
     type: String,
     required: true,
-    trim: true,
-    example: "hunter2",
+    trim: true
   },
   role: {
     type: String,
     enum: ['admin', 'instructor', 'student'],
-    default: 'student',
-    example: "student",
-  },
+    default: 'student'
+  }
 });
 
 module.exports = mongoose.model('User', UserSchema);
