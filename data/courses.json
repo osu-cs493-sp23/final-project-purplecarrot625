@@ -1,0 +1,23 @@
+[
+    {
+      "subject": "CS",
+      "number": "493",
+      "title": "Cloud Application Development",
+      "term": "sp22",
+      "instructorId": "123"
+    },
+    {
+      "subject": "MTH",
+      "number": "101",
+      "title": "Introduction to Mathematics",
+      "term": "fa22",
+      "instructorId": "456"
+    },
+    {
+      "subject": "BIO",
+      "number": "202",
+      "title": "General Biology",
+      "term": "su22",
+      "instructorId": "789"
+    }
+]

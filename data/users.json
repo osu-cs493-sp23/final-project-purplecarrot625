@@ -1,0 +1,20 @@
+[
+    {
+      "name": "Jane Doe",
+      "email": "doej@oregonstate.edu",
+      "password": "hunter2",
+      "role": "student"
+    },
+    {
+      "name": "John Smith",
+      "email": "smithj@oregonstate.edu",
+      "password": "password123",
+      "role": "instructor"
+    },
+    {
+      "name": "Alice Johnson",
+      "email": "johnsona@oregonstate.edu",
+      "password": "alicepassword",
+      "role": "admin"
+    }
+]
