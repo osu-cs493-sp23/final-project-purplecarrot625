@@ -1,9 +1,10 @@
-const { Router } = require('express')
+// Desc: API routes
 
+const { Router } = require('express')
 const router = Router()
 
-router.get('/', (req, res) => {
-    res.send('Hello, world!');
-  });
+router.use('/assignments', require('./assignments'))
+router.use('/courses', require('./courses'))
+router.use('/users', require('./users'))
 
 module.exports = router
