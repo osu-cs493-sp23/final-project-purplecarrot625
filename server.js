@@ -1,12 +1,13 @@
 const express = require('express');
 const morgan = require('morgan');
+const swaggerSetup = require('./swagger');
 require('dotenv').config();
 
 const api = require('./api');
 
 const app = express();
 const port = process.env.PORT || 8000;
-
+swaggerSetup(app);
 const mongoose = require('mongoose');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://rootuser:rootpass@localhost:27017/tarpaulindb?authSource=admin'
@@ -31,7 +32,6 @@ app.use(morgan('dev'));
 
 app.use(express.json());
 app.use(express.static('public'));
-
 /*
  * All routes for the API are written in modules in the api/ directory.  The
  * top-level router lives in api/index.js.  That's what we include here, and
