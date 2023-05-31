@@ -21,4 +21,11 @@ const AssignmentSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('Assignment', AssignmentSchema);
+ module.exports = mongoose.model('Assignment', AssignmentSchema);
+
+// async function insertAssignment(assignment) {
+//     const newAssignment = new AssignmentSchema(assignment)
+//     const result = await newAssignment.save()
+//     return result._id
+// }
+// model.exports.insertAssignment = insertAssignment
