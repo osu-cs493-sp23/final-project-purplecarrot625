@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
+const { options } = require('../api');
 const Schema = mongoose.Schema;
+const User = require('./models/user');
 
 const CourseSchema = new Schema({
   subject: {
@@ -20,9 +22,14 @@ const CourseSchema = new Schema({
   },
   instructorId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
     required: true
-  }
+  },
+  students: [{
+    type: Schema.Types.ObjectId
+  }],
+  assignments:[{
+    type: Schema.Types.ObjectId
+  }]
 });
 
 const Course = mongoose.model('Course', CourseSchema);
@@ -84,31 +91,71 @@ exports.insertNewCourse = insertNewCourse
  * specified ID exists, the returned Promise will resolve to null.
  */
 async function getCourseById(id) {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  } else {
-    const result = await Course.findById(id);
-    return result;
-  }
+  const result = await Course.findById(id);
+  return result;
 }
 exports.getCourseById = getCourseById
 
-async function updateCourseById(id) {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  } else {
-    const result = await Course.findByIdAndUpdate(id);
-    return result;
-  }
+async function updateCourseById(id, requestedBody) {
+  const result = await Course.findByIdAndUpdate(id, requestedBody, options.lean);
+  return result;
 }
 exports.updateCourseById = updateCourseById
 
-async function updateCourseById(id) {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  } else {
-    const result = await Course.findByIdAndUpdate(id);
-    return result;
-  }
+async function deleteCourseById(id) {
+  const result = await Course.findByIdAndUpdate(id);
+  return result;
 }
-exports.updateCourseById = updateCourseById
+exports.deleteCourseById = deleteCourseById
+
+async function getStudentsByCourseId(id) {
+  const course = await Course.findById(id);
+  if (!course) {
+    return null
+  }
+  // Get the students
+  const result = await User.find({ _id: { $in: course.students } });
+  return result
+}
+exports.getStudentsByCourseId = getStudentsByCourseId
+
+async function updateStudentByCourseId(id, add, remove) {
+  const course = await Course.findById(id);
+  if (!course) {
+    return null
+  }
+  if (add) {
+    await Course.updateOne({ _id: id }, { $addToSet: { students: { $each: add } } });
+  }
+  
+  if (remove) {
+    await Course.updateOne({ _id: id }, { $pullAll: { students: remove } });
+  }
+  const updatedCourse = await Course.findById(id);
+  return { students: updatedCourse.students };
+}
+exports.updateStudentByCourseId = updateStudentByCourseId
+
+/**
+ * TODO
+ */
+async function getRosterByCourseId(id) {
+  const course = await Course.findById(id);
+  if (!course) {
+    return null
+  }
+  // Get the students
+  const result = await User.find({ _id: { $in: course.assignments } });
+  return result
+}
+exports.getRosterByCourseId = getRosterByCourseId
+
+async function getAssignmentsByCourseId(id) {
+  const course = await Course.findById(id);
+  if (!course) {
+    return null
+  }
+  const result = await User.find({ _id: { $in: course.assignments } });
+  return result
+}
+exports.getAssignmentsByCourseId = getAssignmentsByCourseId
