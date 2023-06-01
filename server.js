@@ -14,18 +14,6 @@ swaggerSetup(app);
 const mongoose = require('mongoose');
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:root123@localhost:27017/tarpaulindb?authSource=admin'
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-
-mongoose.connection.on('connected', () => {
-  console.log('Connected to MongoDB')
-})
-
-mongoose.connection.on('error', (err) => {
-  console.log('Error connecting to MongoDB', err)
-})
 
 /*
  * Morgan is a popular request logger.
