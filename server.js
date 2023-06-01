@@ -7,10 +7,11 @@ const api = require('./api');
 
 const app = express();
 const port = process.env.PORT || 8000;
-swaggerSetup(app);
-const mongoose = require('mongoose');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://rootuser:rootpass@localhost:27017/tarpaulindb?authSource=admin'
+swaggerSetup(app);
+
+const mongoose = require('mongoose');
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:root123@localhost:27017/tarpaulindb?authSource=admin'
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
