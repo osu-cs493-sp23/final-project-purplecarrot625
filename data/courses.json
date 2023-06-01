@@ -4,20 +4,20 @@
       "number": "493",
       "title": "Cloud Application Development",
       "term": "sp22",
-      "instructorId": "123"
+      "instructorId": "6477ff345e04ba2230a20ce0"
     },
     {
       "subject": "MTH",
       "number": "101",
       "title": "Introduction to Mathematics",
       "term": "fa22",
-      "instructorId": "456"
+      "instructorId": "6477ff617912db4819a0b0d4"
     },
     {
       "subject": "BIO",
       "number": "202",
       "title": "General Biology",
       "term": "su22",
-      "instructorId": "789"
+      "instructorId": "6477ff7954615dc02168ac05"
     }
 ]

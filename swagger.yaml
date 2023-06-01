@@ -4,6 +4,13 @@ info:
   title: The Tarpaulin API
   description: API for an "alternative" to Canvas.
 
+components:
+  securitySchemes:
+    BearerAuth:         # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  
+
 paths:
   /users:
     post:
@@ -116,8 +123,9 @@ paths:
             - type: string
         example: "123"
         required: true
-
     get:
+      security:
+        - BearerAuth: []
       summary: Fetch data about a specific User.
       description: >
         Returns information about the specified User.  If the User has the 'instructor' role, the response should include a list of the IDs of the Courses the User teaches (i.e. Courses whose `instructorId` field matches the ID of this User).  If the User has the 'student' role, the response should include a list of the IDs of the Courses the User is enrolled in.  Only an authenticated User whose ID matches the ID of the requested User can fetch this information.
