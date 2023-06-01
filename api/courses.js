@@ -5,6 +5,7 @@
 const { Router } = require('express')
 
 // const { validateAgainstSchema } = require('../lib/validation')
+
 const {
     getCoursesPage,
     insertNewCourse,
@@ -14,14 +15,13 @@ const {
     getStudentsByCourseId,
     updateStudentByCourseId,
     getRosterByCourseId,
-    getAssignmentsByCourseId
-} = require('../models/course')
+    getAssignmentsByCourseId,
+} = require('../models/course');
 
 const router = Router()
 
 const { ObjectId } = require('mongodb');
 const { default: mongoose } = require('mongoose');
-const { options } = require('.');
 
 /*
  * GET /courses - Route to return a paginated list of courses.
@@ -195,7 +195,6 @@ router.post('/:id/students', async (req, res, next) => {
     }
 })
 
-res.status(200).json({ message: 'Success' });
 /*
  * GET /courses/{id}/roster - Route to fetch a CSV file containing list of the students enrolled in the Course.
  */

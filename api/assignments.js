@@ -1,6 +1,5 @@
 const router = require("express").Router();
 const { ObjectId } = require("mongodb");
-const { options } = require(".");
 
 const mongoose = require('mongoose')
 

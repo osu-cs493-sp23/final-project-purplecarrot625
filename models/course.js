@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-const { options } = require('../api');
 const Schema = mongoose.Schema;
-const User = require('./models/user');
+const User = require('../models/user');
 
 const CourseSchema = new Schema({
   subject: {
@@ -34,7 +33,7 @@ const CourseSchema = new Schema({
 
 const Course = mongoose.model('Course', CourseSchema);
 
-module.exports = Course;
+// module.exports = Course;
 
 async function getCoursesPage(page, subject, number, term) {
     const pageSize = 10;
@@ -97,7 +96,7 @@ async function getCourseById(id) {
 exports.getCourseById = getCourseById
 
 async function updateCourseById(id, requestedBody) {
-  const result = await Course.findByIdAndUpdate(id, requestedBody, options.lean);
+  const result = await Course.findByIdAndUpdate(id, requestedBody, { lean: true });
   return result;
 }
 exports.updateCourseById = updateCourseById
@@ -159,3 +158,14 @@ async function getAssignmentsByCourseId(id) {
   return result
 }
 exports.getAssignmentsByCourseId = getAssignmentsByCourseId
+
+async function bulkInsertNewCourses(courses) {
+  try {
+      const result = await Course.insertMany(courses);
+      return result.map(doc => doc._id);
+  } catch(err) {
+      console.error(err);
+      throw err;
+  }
+}
+exports.bulkInsertNewCourses = bulkInsertNewCourses;
