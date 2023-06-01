@@ -25,21 +25,21 @@ const SubmissionSchema = new Schema({
   },
   file: {
     type: String,
-    required: true
+    //required: true
   }
 });
 
-module.exports = mongoose.model('Submission', SubmissionSchema);
 
-exports.saveFileInfo = async (file) => {
+const saveFileInfo = async (file) => {
   const db = getDbReference();
   const collection = db.collection('files')
   const result = await collection.insertOne(file)
   return result.insertedId
 }
 
-exports.saveFile = async (file) => {
+const saveFile = async (file) => {
   return new Promise((resolve, reject) => {
+    console.log("== saveFile:", file)
     const db = getDbReference()
     const bucket = new GridFSBucket(db, { bucketName: 'files' })
     const metadata = {
@@ -65,7 +65,7 @@ exports.saveFile = async (file) => {
     })
 }
 
-exports.getFileById = async (id) => {
+const getFileById = async (id) => {
   const db = getDbReference()
   const bucket = new GridFSBucket(db, { bucketName: 'files' })
   if (!ObjectId.isValid(id)) {
@@ -78,8 +78,16 @@ exports.getFileById = async (id) => {
   }
 }
 
-exports.getFileDownloadStreamByFilename = (filename) => {
+const getFileDownloadStreamByFilename = (filename) => {
   const db = getDbReference()
   const bucket = new GridFSBucket(db, { bucketName: 'files' })
   return bucket.openDownloadStreamByName(filename)
+}
+
+module.exports = {
+  SubmissionSchema,
+  saveFileInfo,
+  saveFile,
+  getFileById,
+  getFileDownloadStreamByFilename
 }

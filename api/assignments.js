@@ -8,20 +8,23 @@ const { connectToDb } = require("../lib/mongo");
 const mongoose = require("mongoose");
 
 const Assignment = require("../models/assignment");
-const Submission = require("../models/submission");
 const Course = require("../models/course");
 
 const {
-  getFileInfoById,
-  getFileInfo,
+  Submission,
+  saveFileInfo,
   saveFile,
-  getFileDownloadStreamByFileName,
+  getFileById,
+  getFileDownloadStreamByFilename
 } = require("../models/submission");
+
+
 
 const upload = multer({
   storage: multer.diskStorage({
     destination: `${__dirname}/uploads`,
     filename: (req, file, callback) => {
+      console.log("== file:", file);
       const filename = crypto.pseudoRandomBytes(16).toString("hex");
       const extension = file.mimetype.split("/")[1];
       callback(null, `${filename}.${extension}`);
@@ -160,6 +163,7 @@ router.get("/:id/submissions", async (req, res) => {
 router.post("/:id/submissions", upload.single("file"), async (req, res) => {
   console.log("--req.body--", req.body);
   console.log("--req.file--", req.file);
+  console.log({ Submission, saveFileInfo, saveFile, getFileById, getFileDownloadStreamByFilename });
 
   if (req.file && req.body && req.body.studentId && req.body.assignmentId) {
     const assignmentId = req.params.id;
@@ -170,11 +174,12 @@ router.post("/:id/submissions", upload.single("file"), async (req, res) => {
       assignmentId: assignmentId,
       studentId: "6458847ec687e3d3d5b7ec88",
       timestamp: new Date(),
-      grade: null,
+      grade: req.body.grade,
     };
     //TODO: Check user role and course enrollment
 
     // Save file
+    console.log("------start to save file------")
     const savedSubmissionId = await saveFile(file);
     res.status(201).json({ id: savedSubmissionId });
   } else {
