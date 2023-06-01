@@ -21,11 +21,36 @@ const AssignmentSchema = new Schema({
   }
 });
 
- module.exports = mongoose.model('Assignment', AssignmentSchema);
+const Assignment = mongoose.model('Assignment', AssignmentSchema);
 
-// async function insertAssignment(assignment) {
-//     const newAssignment = new AssignmentSchema(assignment)
-//     const result = await newAssignment.save()
-//     return result._id
-// }
-// model.exports.insertAssignment = insertAssignment
+async function createAssignment({ title, points, courseId, due }) {
+  const assignment = new Assignment({
+    _id: new mongoose.Types.ObjectId(),
+    title,
+    points,
+    courseId,
+    due,
+  });
+
+  return await assignment.save();
+}
+
+async function getAssignmentById(id) {
+  return await Assignment.findById(id).lean();
+}
+
+async function updateAssignment(id, updateOps) {
+  return await Assignment.updateOne({ _id: id }, { $set: updateOps }).exec();
+}
+
+async function deleteAssignment(id) {
+  return await Assignment.findByIdAndDelete(id)
+}
+
+module.exports = {
+  Assignment,
+  createAssignment,
+  getAssignmentById,
+  updateAssignment,
+  deleteAssignment
+};
