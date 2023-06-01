@@ -15,7 +15,8 @@ const {
   saveFileInfo,
   saveFile,
   getFileById,
-  getFileDownloadStreamByFilename
+  getFileDownloadStreamByFilename,
+  getFileByAssignmetnId
 } = require("../models/submission");
 
 
@@ -132,27 +133,26 @@ router.delete("/:id", async (req, res) => {
 
 // GET: /assignments/{id}/submissions
 router.get("/:id/submissions", async (req, res) => {
-  const studentId = req.params.id;
+  const assignmentId = req.params.id;
+  console.log(assignmentId);
 
-  if (!ObjectId.isValid(studentId)) {
-    return res.status(404).json({ error: "Invalid student Id..." });
+  if (!ObjectId.isValid(assignmentId)) {
+    return res.status(404).json({ error: "Invalid assignment Id..." });
   }
 
   try {
     // TODO: Check user role and course instructor
 
-    const assignment = await Assignment.findOne({ studentId: studentId });
-
     // if (!(user.role === 'admin' || (user.role === 'instructor' && user._id.toString() === course.instructorId.toString()))) {
     //     return res.status(403).json({ error: 'Forbidden' });
     // }
 
-    const submissions = await Submission.find({ studentId }).lean();
+    const submissions = await getFileByAssignmetnId(assignmentId);
 
     res.status(200).json(submissions);
   } catch (err) {
     if (err instanceof mongoose.CastError && err.kind === "ObjectId") {
-      res.status(404).json({ error: "Assignment not found" });
+      res.status(404).json({ error: "Submission not found" });
     } else {
       res.status(500).json({ error: err.message });
     }
