@@ -747,7 +747,7 @@ paths:
         required: true
         description: A Submission object.
         content:
-          multipart/formdata:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/Submission'
       responses:
@@ -903,6 +903,7 @@ components:
           example: 94.5
         file:
           type: string
+          format: binary
           description: >
             When the Submission is being created, this will be the binary data contained in the submitted file.  When Submission information is being returned from the API, this will contain the URL from which the file can be downloaded.
 

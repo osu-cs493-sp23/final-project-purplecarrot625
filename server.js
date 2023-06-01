@@ -4,6 +4,7 @@ const swaggerSetup = require('./swagger');
 require('dotenv').config();
 
 const api = require('./api');
+const db = require('./lib/mongo');  // 引入我们修改后的mongo.js
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -32,7 +33,8 @@ mongoose.connection.on('error', (err) => {
 app.use(morgan('dev'));
 
 app.use(express.json());
-app.use(express.static('public'));
+
+//app.use(express.static('public'));
 /*
  * All routes for the API are written in modules in the api/ directory.  The
  * top-level router lives in api/index.js.  That's what we include here, and
@@ -56,6 +58,8 @@ app.use('*', function (err, req, res, next) {
       err: "Server error.  Please try again later."
   })
 })
+
+db.connectToDb();  // 连接到数据库
 
 app.listen(port, function() {
   console.log("== Server is running on port", port);
