@@ -15,41 +15,38 @@
  *   MONGO_CREATE_USER - The name of the user to create.
  *   MONGO_CREATE_PASSWORD - The password for the user.
  */
-require('dotenv').config()
+require('dotenv').config();
 
-// const mongoose = require('mongoose');
-// const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:root123@localhost:27017/tarpaulindb?authSource=admin'
+const mongoose = require('mongoose');
+const { bulkInsertNewCourses } = require('./models/course');
+const courseData = require('./data/courses.json');
 
-// mongoose.connect(MONGODB_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true
-// })
+const mongoDBUri = process.env.MONGO_DB_URI || 'mongodb://root:root123@localhost:27017/tarpaulindb?authSource=admin'; // or any uri you have in .env
+const mongoCreateUser = process.env.MONGO_CREATE_USER;
+const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD;
 
-// mongoose.connection.on('connected', () => {
-//   console.log('Connected to MongoDB')
-// })
+async function main() {
+  try {
+    await mongoose.connect(mongoDBUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
 
-// mongoose.connection.on('error', (err) => {
-//   console.log('Error connecting to MongoDB', err)
-// })
+    console.log('Connected to MongoDB');
 
-const { bulkInsertNewCourses } = require('./models/course')
-
-const courseData = require('./data/courses.json')
-
-const mongoCreateUser = process.env.MONGO_CREATE_USER
-const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD
-
-
-mongoose.connection.on('open', async function () {
     const ids = await bulkInsertNewCourses(courseData);
     console.log("== Inserted courses with IDs:", ids);
 
     if (mongoCreateUser && mongoCreatePassword) {
-        console.log("== User creation should be handled outside the application code.");
+      console.log("== User creation should be handled outside the application code.");
     }
 
-    mongoose.connection.close(function () {
-        console.log("== DB connection closed")
-    });
-});
+  } catch (error) {
+    console.error('Error connecting to MongoDB', error);
+  } finally {
+    await mongoose.connection.close();
+    console.log("== DB connection closed");
+  }
+}
+
+main();

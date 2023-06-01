@@ -108,7 +108,7 @@ router.patch('/:id', async (req, res, next) => {
         return res.status(404).json({ error: "Course not found" });
       }
     try {
-        const course = await updateCourseById(courseId,req.body)
+        const course = await updateCourseById(courseId, req.body)
         if (course) {
             res.status(200).send(course)
         } else {

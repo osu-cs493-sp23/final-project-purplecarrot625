@@ -59,21 +59,17 @@ router.post('/login', async function (req, res, next) {
 })
 
 router.get('/:id', requireAuthentication, async function (req, res, next) {
-    if (req.user === req.params.id) {
-        try {
-            const user = await getUserById(req.params.id)
-            if (user) {
-                res.status(200).send(user)
-            } else {
-                next()
-            }
-        } catch (e) {
-            next(e)
+    try {
+        const user = await getUserById(req.params.id)
+        console.log("1111",user)
+        if (user.email === req.user) {
+            res.status(200).send(user)
+        } else {
+            res.status(403).send({
+                err: "Unauthorized to access the specified resource"
+            })
         }
-    } else {
-        res.status(403).send({
-            err: "Unauthorized to access the specified resource"
-        })
-        // next()
+    } catch (e) {
+        next(e)
     }
 })

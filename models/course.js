@@ -75,10 +75,14 @@ exports.getCoursesPage = getCoursesPage;
  * a Promise that resolves to the ID of the newly-created course entry.
  */
 async function insertNewCourse(course) {
-  course = extractValidFields(course, CourseSchema);
-  const newCourse = new Course(course);
-  const result = await newCourse.save();
-  return result._id;
+  try{
+    const newCourse = new Course(course);
+    const result = await newCourse.save();
+    return result._id;
+  }catch (err) {
+    console.log("Error in insertNewUser:", err) // Log the entire error.
+    return null;
+  }
 }
 exports.insertNewCourse = insertNewCourse
 
