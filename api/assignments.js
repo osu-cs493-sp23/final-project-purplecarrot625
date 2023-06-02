@@ -7,8 +7,13 @@ const { connectToDb } = require("../lib/mongo");
 
 const mongoose = require("mongoose");
 
-const Assignment = require("../models/assignment");
-const Course = require("../models/course");
+const {
+  Assignment,
+  createAssignment,
+  getAssignmentById,
+  updateAssignment,
+  deleteAssignment
+} = require("../models/assignment");
 
 const {
   Submission,
@@ -16,7 +21,7 @@ const {
   saveFile,
   getFileById,
   getFileDownloadStreamByFilename,
-  getFileByAssignmetnId
+  getFileByAssignmentId,
 } = require("../models/submission");
 
 
@@ -41,16 +46,9 @@ router.post("/", async (req, res) => {
   // Extract assignment details from request body
   const { title, points, courseId, due } = req.body;
 
-  const assignment = new Assignment({
-    _id: new mongoose.Types.ObjectId(),
-    title,
-    points,
-    courseId,
-    due,
-  });
 
   try {
-    const result = await assignment.save();
+    const result = await createAssignment({ title, points, courseId, due });
     res.status(201).json({ id: result._id });
   } catch (error) {
     res.status(400).json({
@@ -70,7 +68,7 @@ router.get("/:id", async (req, res, next) => {
   }
 
   try {
-    const assignment = await Assignment.findById(assignmentId).lean();
+    const assignment = await getAssignmentById(assignmentId);
 
     if (assignment) {
       res.status(200).json(assignment);
@@ -105,10 +103,7 @@ router.patch("/:id", async (req, res, next) => {
   }
 
   try {
-    await Assignment.updateOne(
-      { _id: assignmentId },
-      { $set: updateOps }
-    ).exec();
+    await updateAssignment(assignmentId, updateOps);
     res.status(200).json({ message: "Assignment updated..." });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -124,8 +119,8 @@ router.delete("/:id", async (req, res) => {
   }
 
   try {
-    const assignment = await Assignment.findByIdAndDelete(assignmentId);
-    res.status(204).json({ message: "Assignment deleted" });
+    await deleteAssignment(assignmentId);
+    res.status(204).json({ message: "Assignment deleted..." });
   } catch (err) {
     res.status(404).json({ error: err });
   }
@@ -134,6 +129,9 @@ router.delete("/:id", async (req, res) => {
 // GET: /assignments/{id}/submissions
 router.get("/:id/submissions", async (req, res) => {
   const assignmentId = req.params.id;
+  const page = parseInt(req.query.page) || 1;
+  console.log("== page:", page);
+  const pageSize = 10
   console.log(assignmentId);
 
   if (!ObjectId.isValid(assignmentId)) {
@@ -147,8 +145,7 @@ router.get("/:id/submissions", async (req, res) => {
     //     return res.status(403).json({ error: 'Forbidden' });
     // }
 
-    const submissions = await getFileByAssignmetnId(assignmentId);
-
+    const submissions = await getFileByAssignmentId(assignmentId, page, pageSize);
     res.status(200).json(submissions);
   } catch (err) {
     if (err instanceof mongoose.CastError && err.kind === "ObjectId") {
