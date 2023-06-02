@@ -3,13 +3,15 @@ info:
   version: 1.0.0
   title: The Tarpaulin API
   description: API for an "alternative" to Canvas.
+security:
+        - BearerAuth: []
 
 components:
   securitySchemes:
     BearerAuth:         # arbitrary name for the security scheme
       type: http
       scheme: bearer
-      bearerFormat: JWT  
+      bearerFormat: JWT
 
 paths:
   /users:
