@@ -2,3 +2,26 @@
 
 This is the final project for CS493 🐰&🐯
 <img src="https://i.imgflip.com/7nybpn.jpg" title="made at imgflip.com" width='200px'/>
+
+## Setup
+
+### After clone the code, please rename env_template to .env on your localmachine. And then set the variable according to your requirements.
+
+
+
+### **Insert pre-set data to database**
+
+`npm run initdb`
+
+
+### **Run mongodb server**
+`docker-compose up`
+
+
+### **Run nodejs server**
+
+`npm run dev` / `npm start`
+
+### **Test api with swagger**
+
+enter http://localhost:8000/api-docs/#/
