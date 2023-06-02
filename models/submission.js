@@ -84,26 +84,69 @@ const getFileDownloadStreamByFilename = (filename) => {
   return bucket.openDownloadStreamByName(filename)
 }
 
-const getFileByAssignmetnId = async (id) => {
-  console.log("== getFileByAssignmentId:", id)
-  const db = getDbReference()
-  const bucket = new GridFSBucket(db, { bucketName: 'submissions' })
-  if (!ObjectId.isValid(id)) {
-    console.log("== id is not valid")
-    return null
-  } else {
-    console.log("== id is valid")
+const getFileByAssignmentId = async (assignmentId, pageNum, pageSize) => {
+  console.log("== getFileByAssignmentId:", assignmentId);
 
-    const results = await bucket.find({ 'metadata.assignmentId': id }).toArray();
-    console.log("== results:", results)
-    return results
+  const db = getDbReference();
+  const bucket = new GridFSBucket(db, { bucketName: 'submissions' });
+
+  if (!ObjectId.isValid(assignmentId)) {
+    console.log("== id is not valid");
+    return null;
+  } else {
+    console.log("== id is valid");
+
+    // calculate the total number of files
+    const totalFiles = await db.collection('submissions.files').countDocuments({ 'metadata.assignmentId': assignmentId });
+
+    // calculate the last page
+    const lastPage = Math.ceil(totalFiles / pageSize);
+
+    // adjust the page number within valid range
+    pageNum = pageNum > lastPage ? lastPage : pageNum;
+    pageNum = pageNum < 1 ? 1 : pageNum;
+
+    // retrieve files
+    const files = await bucket.find({ 'metadata.assignmentId': assignmentId })
+      .skip((pageNum - 1) * pageSize)
+      .limit(pageSize)
+      .toArray();
+
+    console.log("== results:", files);
+
+    // Generate HATEOAS links for surrounding pages
+    const links = {};
+    if (totalFiles > 0) {
+      if (pageNum < lastPage) {
+        links.nextPage = `/files?page=${pageNum + 1}`;
+        links.lastPage = `/files?page=${lastPage}`;
+      }
+      if (pageNum > 1) {
+        links.prevPage = `/files?page=${pageNum - 1}`;
+        links.firstPage = "/files?page=1";
+      }
+      if (lastPage == 1) {
+        links.self = `/files?page=${pageNum}`;
+      }
+    }
+
+    return {
+      files,
+      links,
+      totalFiles,
+      totalPages: lastPage,
+      currentPage: pageNum,
+    };
   }
 }
+
+
+
 module.exports = {
   Submission: mongoose.model('Submission', SubmissionSchema),
   saveFileInfo,
   saveFile,
   getFileById,
   getFileDownloadStreamByFilename,
-  getFileByAssignmetnId
+  getFileByAssignmentId,
 }

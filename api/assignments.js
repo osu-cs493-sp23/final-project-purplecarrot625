@@ -21,7 +21,7 @@ const {
   saveFile,
   getFileById,
   getFileDownloadStreamByFilename,
-  getFileByAssignmetnId
+  getFileByAssignmentId,
 } = require("../models/submission");
 
 
@@ -129,6 +129,9 @@ router.delete("/:id", async (req, res) => {
 // GET: /assignments/{id}/submissions
 router.get("/:id/submissions", async (req, res) => {
   const assignmentId = req.params.id;
+  const page = parseInt(req.query.page) || 1;
+  console.log("== page:", page);
+  const pageSize = 10
   console.log(assignmentId);
 
   if (!ObjectId.isValid(assignmentId)) {
@@ -142,8 +145,7 @@ router.get("/:id/submissions", async (req, res) => {
     //     return res.status(403).json({ error: 'Forbidden' });
     // }
 
-    const submissions = await getFileByAssignmetnId(assignmentId);
-
+    const submissions = await getFileByAssignmentId(assignmentId, page, pageSize);
     res.status(200).json(submissions);
   } catch (err) {
     if (err instanceof mongoose.CastError && err.kind === "ObjectId") {
