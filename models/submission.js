@@ -84,8 +84,9 @@ const getFileDownloadStreamByFilename = (filename) => {
   return bucket.openDownloadStreamByName(filename)
 }
 
-const getFileByAssignmentId = async (assignmentId, pageNum, pageSize) => {
+const getStudentSubmissionByAssignmentId = async (assignmentId, studentId, pageNum, pageSize) => {
   console.log("== getFileByAssignmentId:", assignmentId);
+
 
   const db = getDbReference();
   const bucket = new GridFSBucket(db, { bucketName: 'submissions' });
@@ -107,7 +108,7 @@ const getFileByAssignmentId = async (assignmentId, pageNum, pageSize) => {
     pageNum = pageNum < 1 ? 1 : pageNum;
 
     // retrieve files
-    const files = await bucket.find({ 'metadata.assignmentId': assignmentId })
+    const submissions = await bucket.find({ 'metadata.assignmentId': assignmentId, 'metadata.studentId': studentId })
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
       .toArray();
@@ -131,7 +132,7 @@ const getFileByAssignmentId = async (assignmentId, pageNum, pageSize) => {
     }
 
     return {
-      files,
+      submissions,
       links,
       totalFiles,
       totalPages: lastPage,
@@ -148,5 +149,5 @@ module.exports = {
   saveFile,
   getFileById,
   getFileDownloadStreamByFilename,
-  getFileByAssignmentId,
+  getStudentSubmissionByAssignmentId
 }
