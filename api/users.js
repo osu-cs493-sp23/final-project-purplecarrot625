@@ -8,7 +8,8 @@ const {
     UserSchema,
     insertNewUser,
     getUserById,
-    validateUser
+    validateUser,
+    getUserByEmail
 } = require('../models/user')
 const { generateAuthToken, requireAuthentication } = require("../lib/auth")
 
@@ -30,7 +31,7 @@ router.post('/', async function (req, res) {
       res.status(500).send({ error: 'Internal Server Error.' });
     }
   });
-  
+
 router.post('/login', async function (req, res, next) {
     if (req.body && req.body.email && req.body.password) {
         try {
@@ -39,7 +40,8 @@ router.post('/login', async function (req, res, next) {
                 req.body.password
             )
             if (authenticated) {
-                const token = generateAuthToken(req.body.email)
+                const user = await getUserByEmail(req.body.email, true)
+                const token = generateAuthToken(req.body.email, user.role)
                 res.status(200).send({
                     token: token
                 })

@@ -4,7 +4,7 @@ info:
   title: The Tarpaulin API
   description: API for an "alternative" to Canvas.
 security:
-        - BearerAuth: []
+  - BearerAuth: []
 
 components:
   securitySchemes:
@@ -688,6 +688,8 @@ paths:
         required: true
 
     get:
+      security:
+        - BearerAuth: []
       summary: Fetch the list of all Submissions for an Assignment.
       description: >
         Returns the list of all Submissions for an Assignment.  This list should be paginated.  Only an authenticated User with 'admin' role or an authenticated 'instructor' User whose ID matches the `instructorId` of the Course corresponding to the Assignment's `courseId` can fetch the Submissions for an Assignment.

@@ -113,21 +113,21 @@ const getStudentSubmissionByAssignmentId = async (assignmentId, studentId, pageN
       .limit(pageSize)
       .toArray();
 
-    console.log("== results:", files);
+    console.log("== results:", submissions);
 
     // Generate HATEOAS links for surrounding pages
     const links = {};
     if (totalFiles > 0) {
       if (pageNum < lastPage) {
-        links.nextPage = `/files?page=${pageNum + 1}`;
-        links.lastPage = `/files?page=${lastPage}`;
+        links.nextPage = `/submissions?page=${pageNum + 1}`;
+        links.lastPage = `/submissions?page=${lastPage}`;
       }
       if (pageNum > 1) {
-        links.prevPage = `/files?page=${pageNum - 1}`;
-        links.firstPage = "/files?page=1";
+        links.prevPage = `/submissions?page=${pageNum - 1}`;
+        links.firstPage = "/submissions?page=1";
       }
       if (lastPage == 1) {
-        links.self = `/files?page=${pageNum}`;
+        links.self = `/submissions?page=${pageNum}`;
       }
     }
 

@@ -48,7 +48,12 @@ async function deleteAssignment(id) {
 }
 
 async function getCourseIdByAssignmentId(id) {
+  console.log("==id:",id);
   const assignment = await Assignment.findById(id).lean();
+  console.log(assignment);
+  if (!assignment) {
+    return null;
+  }
   return assignment.courseId;
 }
 

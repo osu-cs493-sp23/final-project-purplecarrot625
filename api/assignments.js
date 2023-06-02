@@ -22,7 +22,7 @@ const {
   saveFile,
   getFileById,
   getFileDownloadStreamByFilename,
-  getFileByAssignmentId,
+  getStudentSubmissionByAssignmentId,
 } = require("../models/submission");
 
 const { getCourseById } = require("../models/course");
@@ -145,6 +145,7 @@ router.get("/:id/submissions", requireAuthentication, async (req, res) => {
   }
 
   const courseId = await getCourseIdByAssignmentId(assignmentId);
+  console.log("== courseId:", courseId);
   const course = await getCourseById(courseId);
 
   console.log('== user.role', req.user.role)
