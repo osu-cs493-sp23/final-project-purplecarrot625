@@ -5,7 +5,7 @@ This is the final project for CS493 🐰&🐯
 
 ## Setup
 
-### After clone the code, please rename env_template to .env on your localmachine. And then set the variable according to your requirements.
+### After cloning the code, please rename env_template to .env on your local machine. And then set the variable according to your requirements.
 
 
 
