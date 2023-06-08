@@ -12,7 +12,8 @@ const {
   createAssignment,
   getAssignmentById,
   updateAssignment,
-  deleteAssignment
+  deleteAssignment,
+  getCourseIdByAssignmentId,
 } = require("../models/assignment");
 
 const {
@@ -21,8 +22,12 @@ const {
   saveFile,
   getFileById,
   getFileDownloadStreamByFilename,
-  getFileByAssignmentId,
+  getStudentSubmissionByAssignmentId,
 } = require("../models/submission");
+
+const { getCourseById } = require("../models/course");
+
+const { requireAuthentication } = require("../lib/auth");
 
 
 
@@ -127,8 +132,9 @@ router.delete("/:id", async (req, res) => {
 });
 
 // GET: /assignments/{id}/submissions
-router.get("/:id/submissions", async (req, res) => {
+router.get("/:id/submissions", requireAuthentication, async (req, res) => {
   const assignmentId = req.params.id;
+  const studentId = req.query.studentId;
   const page = parseInt(req.query.page) || 1;
   console.log("== page:", page);
   const pageSize = 10
@@ -138,21 +144,25 @@ router.get("/:id/submissions", async (req, res) => {
     return res.status(404).json({ error: "Invalid assignment Id..." });
   }
 
-  try {
-    // TODO: Check user role and course instructor
+  const courseId = await getCourseIdByAssignmentId(assignmentId);
+  console.log("== courseId:", courseId);
+  const course = await getCourseById(courseId);
 
-    // if (!(user.role === 'admin' || (user.role === 'instructor' && user._id.toString() === course.instructorId.toString()))) {
-    //     return res.status(403).json({ error: 'Forbidden' });
-    // }
+  console.log('== user.role', req.user.role)
 
-    const submissions = await getFileByAssignmentId(assignmentId, page, pageSize);
-    res.status(200).json(submissions);
-  } catch (err) {
-    if (err instanceof mongoose.CastError && err.kind === "ObjectId") {
-      res.status(404).json({ error: "Submission not found" });
-    } else {
-      res.status(500).json({ error: err.message });
+  if (req.user.role === "admin" || req.user.role === "instructor" && req.user._id.toString() === course.instructorId.toString()) {
+    try {
+      const submissions = await getStudentSubmissionByAssignmentId(assignmentId, studentId, page, pageSize);
+      res.status(200).json(submissions);
+    } catch (err) {
+      if (err instanceof mongoose.CastError && err.kind === "ObjectId") {
+        res.status(404).json({ error: "Submission not found" });
+      } else {
+        res.status(500).json({ error: err.message });
+      }
     }
+  } else {
+    res.status(403).json({ error: "Unauthorized to access the specified resource" });
   }
 });
 

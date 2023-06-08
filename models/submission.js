@@ -84,8 +84,9 @@ const getFileDownloadStreamByFilename = (filename) => {
   return bucket.openDownloadStreamByName(filename)
 }
 
-const getFileByAssignmentId = async (assignmentId, pageNum, pageSize) => {
+const getStudentSubmissionByAssignmentId = async (assignmentId, studentId, pageNum, pageSize) => {
   console.log("== getFileByAssignmentId:", assignmentId);
+
 
   const db = getDbReference();
   const bucket = new GridFSBucket(db, { bucketName: 'submissions' });
@@ -107,31 +108,31 @@ const getFileByAssignmentId = async (assignmentId, pageNum, pageSize) => {
     pageNum = pageNum < 1 ? 1 : pageNum;
 
     // retrieve files
-    const files = await bucket.find({ 'metadata.assignmentId': assignmentId })
+    const submissions = await bucket.find({ 'metadata.assignmentId': assignmentId, 'metadata.studentId': studentId })
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
       .toArray();
 
-    console.log("== results:", files);
+    console.log("== results:", submissions);
 
     // Generate HATEOAS links for surrounding pages
     const links = {};
     if (totalFiles > 0) {
       if (pageNum < lastPage) {
-        links.nextPage = `/files?page=${pageNum + 1}`;
-        links.lastPage = `/files?page=${lastPage}`;
+        links.nextPage = `/submissions?page=${pageNum + 1}`;
+        links.lastPage = `/submissions?page=${lastPage}`;
       }
       if (pageNum > 1) {
-        links.prevPage = `/files?page=${pageNum - 1}`;
-        links.firstPage = "/files?page=1";
+        links.prevPage = `/submissions?page=${pageNum - 1}`;
+        links.firstPage = "/submissions?page=1";
       }
       if (lastPage == 1) {
-        links.self = `/files?page=${pageNum}`;
+        links.self = `/submissions?page=${pageNum}`;
       }
     }
 
     return {
-      files,
+      submissions,
       links,
       totalFiles,
       totalPages: lastPage,
@@ -148,5 +149,5 @@ module.exports = {
   saveFile,
   getFileById,
   getFileDownloadStreamByFilename,
-  getFileByAssignmentId,
+  getStudentSubmissionByAssignmentId
 }

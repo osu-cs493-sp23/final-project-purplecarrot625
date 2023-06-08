@@ -39,9 +39,9 @@ exports.insertNewUser = async function (user) {
     console.log(hash)
     user.password = hash;
     console.log("  -- userToInsert:", user);
-  
+
     const insertedUser = new User(user); // Ensure 'User' is correctly imported.
-    const result = await insertedUser.save(); 
+    const result = await insertedUser.save();
     return result._id;
   } catch (err) {
     console.log("Error in insertNewUser:", err) // Log the entire error.
@@ -74,3 +74,4 @@ exports.validateUser = async function (email, password) {
   const user = await getUserByEmail(email, true);
   return user && await bcrypt.compare(password, user.password);
 };
+

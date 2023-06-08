@@ -47,10 +47,21 @@ async function deleteAssignment(id) {
   return await Assignment.findByIdAndDelete(id)
 }
 
+async function getCourseIdByAssignmentId(id) {
+  console.log("==id:",id);
+  const assignment = await Assignment.findById(id).lean();
+  console.log(assignment);
+  if (!assignment) {
+    return null;
+  }
+  return assignment.courseId;
+}
+
 module.exports = {
   Assignment,
   createAssignment,
   getAssignmentById,
   updateAssignment,
-  deleteAssignment
+  deleteAssignment,
+  getCourseIdByAssignmentId
 };
