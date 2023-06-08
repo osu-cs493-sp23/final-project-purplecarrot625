@@ -1,0 +1,5 @@
+MONGO_DB_NAME=DataBaseName
+MONGO_ROOT_USER=RootUserName
+MONGO_ROOT_PASSWORD=RootPassword
+MONGO_USER=UserName
+MONGO_PASSWORD=UserPassword
