@@ -13,8 +13,8 @@ const port = process.env.PORT || 8000;
 swaggerSetup(app);
 
 
-const mongoose = require('mongoose');
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:root123@localhost:27017/tarpaulindb?authSource=admin' // todo: 改为${}形式
+// const mongoose = require('mongoose');
+// const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:root123@localhost:27017/tarpaulindb?authSource=admin' // todo: 改为${}形式
 
 const { requireAuthentication } = require("./lib/auth");
 
@@ -119,12 +119,10 @@ app.use('*', function (err, req, res, next) {
   })
 })
 
-
 db.connectToDb();  // 连接到数据库
 
 // Conntect to Redis server
 redisClient.connect().then(() => {
-
 app.listen(port, function() {
   console.log("== Server is running on port", port);
   })
