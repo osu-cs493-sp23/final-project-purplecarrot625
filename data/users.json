@@ -8,13 +8,13 @@
     {
       "name": "John Smith",
       "email": "smithj@oregonstate.edu",
-      "password": "password123",
+      "password": "hunter2",
       "role": "instructor"
     },
     {
       "name": "Alice Johnson",
       "email": "johnsona@oregonstate.edu",
-      "password": "alicepassword",
+      "password": "hunter2",
       "role": "admin"
     }
 ]

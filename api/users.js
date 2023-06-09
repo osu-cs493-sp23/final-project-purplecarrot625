@@ -64,7 +64,8 @@ router.get('/:id', requireAuthentication, async function (req, res, next) {
     try {
         const user = await getUserById(req.params.id)
         console.log("1111",user)
-        if (user.email === req.user) {
+        if (user.email === req.user.email) {
+            console.log("2222",user)
             res.status(200).send(user)
         } else {
             res.status(403).send({
