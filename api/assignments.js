@@ -27,7 +27,7 @@ const {
 
 const { getCourseById } = require("../models/course");
 
-const { requireAuthentication } = require("../lib/auth");
+//const { requireAuthentication } = require("../lib/auth");
 
 
 
@@ -132,7 +132,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // GET: /assignments/{id}/submissions
-router.get("/:id/submissions", requireAuthentication, async (req, res) => {
+router.get("/:id/submissions", async (req, res) => {
   const assignmentId = req.params.id;
   const studentId = req.query.studentId;
   const page = parseInt(req.query.page) || 1;

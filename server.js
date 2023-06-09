@@ -15,6 +15,7 @@ swaggerSetup(app);
 const mongoose = require('mongoose');
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:root123@localhost:27017/tarpaulindb?authSource=admin' // todo: 改为${}形式
 
+const { requireAuthentication } = require("./lib/auth");
 
 /*
 * Configure Redis client connection.
@@ -82,6 +83,7 @@ async function rateLimit(req, res, next) {
   }
 }
 
+app.use(requireAuthentication)
 app.use(rateLimit)
 
 
