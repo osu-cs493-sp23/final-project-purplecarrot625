@@ -141,6 +141,21 @@ const getStudentSubmissionByAssignmentId = async (assignmentId, studentId, pageN
   }
 }
 
+deleteSubmissionsOfAssignment = async (assignmentId) => {
+  const db = getDbReference();
+  const bucket = new GridFSBucket(db, { bucketName: 'submissions' });
+  const results = await bucket.find({ 'metadata.assignmentId': assignmentId })
+    .toArray();
+  console.log("== results:", results);
+  if (results.length === 0) {
+    console.log("== no submissions found");
+    return;
+  }
+  for (let i = 0; i < results.length; i++) {
+    await bucket.delete(results[i]._id);
+  }
+}
+
 
 
 module.exports = {
@@ -149,5 +164,6 @@ module.exports = {
   saveFile,
   getFileById,
   getFileDownloadStreamByFilename,
-  getStudentSubmissionByAssignmentId
+  getStudentSubmissionByAssignmentId,
+  deleteSubmissionsOfAssignment
 }

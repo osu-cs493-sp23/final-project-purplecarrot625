@@ -23,9 +23,10 @@ const {
   getFileById,
   getFileDownloadStreamByFilename,
   getStudentSubmissionByAssignmentId,
+  deleteSubmissionsOfAssignment
 } = require("../models/submission");
 
-const { getCourseById } = require("../models/course");
+const { getCourseById, getStudentsByCourseId } = require("../models/course");
 
 const { requireAuthentication } = require("../lib/auth");
 
@@ -86,48 +87,65 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // PATCH: /assignments/{id}
-router.patch("/:id", async (req, res, next) => {
+router.patch("/:id", requireAuthentication, async (req, res, next) => {
   const assignmentId = req.params.id;
+  const courseId = await getCourseIdByAssignmentId(assignmentId);
+  const course = await getCourseById(courseId);
+  const instructorId = course.instructorId;
 
   if (!mongoose.Types.ObjectId.isValid(assignmentId)) {
     return res.status(404).json({ error: "Invalid assignment Id..." });
   }
 
-  const updateOps = {};
-
-  if (Array.isArray(req.body)) {
-    for (const ops of req.body) {
-      updateOps[ops.propName] = ops.value;
+  // Only admin or instructor can update the assignment.
+  if (req.user.role == "admin" || req.user.role == "instructor" && instructorId == course.instructorId) {
+    const updateOps = {};
+    if (Array.isArray(req.body)) {
+      for (const ops of req.body) {
+        updateOps[ops.propName] = ops.value;
+      }
+    } else if (typeof req.body === "object") {
+      for (const prop in req.body) {
+        if (prop !== "courseId") {
+          updateOps[prop] = req.body[prop];
+        }
+      }
+    } else {
+      return res.status(400).json({ error: "Invalid request payload..." });
     }
-  } else if (typeof req.body === "object") {
-    for (const prop in req.body) {
-      updateOps[prop] = req.body[prop];
+
+    try {
+      await updateAssignment(assignmentId, updateOps);
+      res.status(200).json({ message: "Assignment updated...", updateOps, yourRole: req.user.role });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
     }
   } else {
-    return res.status(400).json({ error: "Invalid request payload..." });
-  }
-
-  try {
-    await updateAssignment(assignmentId, updateOps);
-    res.status(200).json({ message: "Assignment updated..." });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(403).json({ error: "Only instructor or admin can update the assignment" });
   }
 });
 
 // DELETE: /assignments/{id}
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuthentication, async (req, res) => {
   const assignmentId = req.params.id;
+  const courseId = await getCourseIdByAssignmentId(assignmentId);
+  const course = await getCourseById(courseId);
+  const instructorId = course.instructorId;
 
   if (!ObjectId.isValid(assignmentId)) {
     return res.status(404).json({ error: "Invalid assignment Id..." });
   }
-
-  try {
-    await deleteAssignment(assignmentId);
-    res.status(204).json({ message: "Assignment deleted..." });
-  } catch (err) {
-    res.status(404).json({ error: err });
+  // Only admin or instructor can delete the assignment.
+  if (req.user.role == "admin" || req.user.role == "instructor" && instructorId == course.instructorId) {
+    try {
+      await deleteAssignment(assignmentId);
+      await deleteSubmissionsOfAssignment(assignmentId)
+      res.status(204).json({ message: "Assignment deleted..." });
+    } catch (err) {
+      res.status(404).json({ error: err });
+    }
+  } else {
+    res.status(403).json({ error: "Only instructor or admin can delete the assignment" });
   }
 });
 
@@ -135,23 +153,26 @@ router.delete("/:id", async (req, res) => {
 router.get("/:id/submissions", requireAuthentication, async (req, res) => {
   const assignmentId = req.params.id;
   const studentId = req.query.studentId;
+  const courseId = await getCourseIdByAssignmentId(assignmentId);
+  const course = await getCourseById(courseId);
+  const instructorId = course.instructorId;
+
+
   const page = parseInt(req.query.page) || 1;
-  console.log("== page:", page);
   const pageSize = 10
-  console.log(assignmentId);
+
+  console.log("== courseId:", courseId);
+  console.log("== assignmentId:", assignmentId);
+  console.log("== studentId:", studentId);
+  console.log("== page:", page);
 
   if (!ObjectId.isValid(assignmentId)) {
     return res.status(404).json({ error: "Invalid assignment Id..." });
   }
 
-  const courseId = await getCourseIdByAssignmentId(assignmentId);
-  console.log("== courseId:", courseId);
-  const course = await getCourseById(courseId);
-
-  console.log('== user.role', req.user.role)
-
-  if (req.user.role === "admin" || req.user.role === "instructor" && req.user._id.toString() === course.instructorId.toString()) {
+  if (req.user.role === "admin" || req.user.role === "instructor" && instructorId == course.instructorId) {
     try {
+      console.log("Welcome:", req.user.role);
       const submissions = await getStudentSubmissionByAssignmentId(assignmentId, studentId, page, pageSize);
       res.status(200).json(submissions);
     } catch (err) {
@@ -170,24 +191,37 @@ router.get("/:id/submissions", requireAuthentication, async (req, res) => {
 router.post("/:id/submissions", upload.single("file"), async (req, res) => {
   console.log("--req.body--", req.body);
   console.log("--req.file--", req.file);
-  console.log({ Submission, saveFileInfo, saveFile, getFileById, getFileDownloadStreamByFilename });
 
-  if (req.file && req.body && req.body.studentId && req.body.assignmentId) {
-    const assignmentId = req.params.id;
+  if (req.user.role !== "student") {
+    return res.status(403).json({ error: "Only student can submit the assignment" });
+  }
+  const assignmentId = req.params.id;
+  if (req.body && req.body.studentId && assignmentId) {
     const file = {
       contentType: req.file.mimetype,
       filename: req.file.filename,
       path: req.file.path,
       assignmentId: assignmentId,
-      studentId: "6458847ec687e3d3d5b7ec88",
+      studentId: req.body.studentId,
       timestamp: new Date(),
-      grade: req.body.grade,
+      grade: null,
     };
-    //TODO: Check user role and course enrollment
+    // Check user role and course enrollment
+    const courseId = await getCourseIdByAssignmentId(assignmentId);
+    const studentsEnrollments = await getStudentsByCourseId(courseId);
+    console.log("== studentsEnrollments:", studentsEnrollments);
+    console.log("== req.body.studentId:", req.body.studentId)
+    const studentIsEnrolled = studentsEnrollments && studentsEnrollments.some && studentsEnrollments.some(student => String(student._id) === String(req.body.studentId));
+    console.log("== studentIsEnrolled:", studentIsEnrolled);
 
+    if (studentIsEnrolled == false) {
+      return res.status(403).json({ error: "Student is not enrolled in the course" });
+    }
     // Save file
     console.log("------start to save file------")
     const savedSubmissionId = await saveFile(file);
+    // Updatethe submissionId in assignment
+
     res.status(201).json({ id: savedSubmissionId });
   } else {
     res

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const User = require('../models/user');
+const { User } = require('../models/user');
+const { ObjectId } = require('mongodb');
 
 const CourseSchema = new Schema({
   subject: {
@@ -26,7 +27,7 @@ const CourseSchema = new Schema({
   students: [{
     type: Schema.Types.ObjectId
   }],
-  assignments:[{
+  assignments: [{
     type: Schema.Types.ObjectId
   }]
 });
@@ -36,37 +37,37 @@ const Course = mongoose.model('Course', CourseSchema);
 // module.exports = Course;
 
 async function getCoursesPage(page, subject, number, term) {
-    const pageSize = 10;
+  const pageSize = 10;
 
-    // Build a query object based on provided filters
-    const query = {};
-    if (subject) query.subject = subject;
-    if (number) query.number = number;
-    if (term) query.term = term;
+  // Build a query object based on provided filters
+  const query = {};
+  if (subject) query.subject = subject;
+  if (number) query.number = number;
+  if (term) query.term = term;
 
-    const count = await Course.countDocuments(query);
+  const count = await Course.countDocuments(query);
 
-    /*
-     * Compute last page number and make sure page is within allowed bounds.
-     * Compute offset into collection.
-     */
-    const lastPage = Math.ceil(count / pageSize);
-    page = page > lastPage ? lastPage : page;
-    page = page < 1 ? 1 : page;
-    const offset = (page - 1) * pageSize;
+  /*
+   * Compute last page number and make sure page is within allowed bounds.
+   * Compute offset into collection.
+   */
+  const lastPage = Math.ceil(count / pageSize);
+  page = page > lastPage ? lastPage : page;
+  page = page < 1 ? 1 : page;
+  const offset = (page - 1) * pageSize;
 
-    const results = await Course.find(query)
-        .sort({ _id: 1 })
-        .skip(offset)
-        .limit(pageSize);
+  const results = await Course.find(query)
+    .sort({ _id: 1 })
+    .skip(offset)
+    .limit(pageSize);
 
-    return {
-        courses: results,
-        page: page,
-        totalPages: lastPage,
-        pageSize: pageSize,
-        count: count
-    };
+  return {
+    courses: results,
+    page: page,
+    totalPages: lastPage,
+    pageSize: pageSize,
+    count: count
+  };
 }
 exports.getCoursesPage = getCoursesPage;
 
@@ -75,11 +76,11 @@ exports.getCoursesPage = getCoursesPage;
  * a Promise that resolves to the ID of the newly-created course entry.
  */
 async function insertNewCourse(course) {
-  try{
+  try {
     const newCourse = new Course(course);
     const result = await newCourse.save();
     return result._id;
-  }catch (err) {
+  } catch (err) {
     console.log("Error in insertNewUser:", err) // Log the entire error.
     return null;
   }
@@ -112,6 +113,7 @@ async function deleteCourseById(id) {
 exports.deleteCourseById = deleteCourseById
 
 async function getStudentsByCourseId(id) {
+  console.log("== getStudentsByCourseId()")
   const course = await Course.findById(id);
   if (!course) {
     return null
@@ -130,7 +132,7 @@ async function updateStudentByCourseId(id, add, remove) {
   if (add) {
     await Course.updateOne({ _id: id }, { $addToSet: { students: { $each: add } } });
   }
-  
+
   if (remove) {
     await Course.updateOne({ _id: id }, { $pullAll: { students: remove } });
   }
@@ -165,11 +167,39 @@ exports.getAssignmentsByCourseId = getAssignmentsByCourseId
 
 async function bulkInsertNewCourses(courses) {
   try {
-      const result = await Course.insertMany(courses);
-      return result.map(doc => doc._id);
-  } catch(err) {
-      console.error(err);
-      throw err;
+    const result = await Course.insertMany(courses);
+    return result.map(doc => doc._id);
+  } catch (err) {
+    console.error(err);
+    throw err;
   }
 }
 exports.bulkInsertNewCourses = bulkInsertNewCourses;
+
+// Get all courses where the instructor id is a match
+async function getCoursesByInstructorId(id) {
+  id = new ObjectId(id);
+  try {
+    const courses = await Course.find({ instructorId: id });
+    console.log("== courses:", courses);
+    return courses;
+  } catch (err) {
+    console.log(`Error getting courses by instructor id: ${err}`);
+    return null;
+  }
+}
+exports.getCoursesByInstructorId = getCoursesByInstructorId;
+
+// Get all courses where the student's id is in the students array
+async function getCoursesByStudentId(id) {
+  id = new ObjectId(id);
+  try {
+    const courses = await Course.find({ students: id });
+    console.log("== courses:", courses);
+    return courses;
+  } catch (err) {
+    console.log(`Error getting courses by student id: ${err}`);
+    return null;
+  }
+}
+exports.getCoursesByStudentId = getCoursesByStudentId;
