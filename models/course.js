@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const User = require('../models/user');
+const { User } = require('../models/user');
 
 const CourseSchema = new Schema({
   subject: {
@@ -112,6 +112,7 @@ async function deleteCourseById(id) {
 exports.deleteCourseById = deleteCourseById
 
 async function getStudentsByCourseId(id) {
+  console.log("== getStudentsByCourseId()")
   const course = await Course.findById(id);
   if (!course) {
     return null
@@ -130,7 +131,7 @@ async function updateStudentByCourseId(id, add, remove) {
   if (add) {
     await Course.updateOne({ _id: id }, { $addToSet: { students: { $each: add } } });
   }
-  
+
   if (remove) {
     await Course.updateOne({ _id: id }, { $pullAll: { students: remove } });
   }
