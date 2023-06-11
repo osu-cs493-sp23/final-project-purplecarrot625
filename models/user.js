@@ -30,6 +30,8 @@ exports.UserSchema = UserSchema
 
 const User = mongoose.model('User', UserSchema);
 
+exports.User = User;
+
 /*
  * Insert a new User into the DB.
  */

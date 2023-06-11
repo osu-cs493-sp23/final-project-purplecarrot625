@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+
 const {User} = require('./user');
 const { Assignment } = require('./assignment');
 
@@ -27,6 +28,7 @@ const CourseSchema = new Schema({
   students: [{
     type: Schema.Types.ObjectId
   }],
+
   assignments:[{
     type: Schema.Types.ObjectId,
     ref: 'Assignment',
@@ -39,6 +41,7 @@ const Course = mongoose.model('Course', CourseSchema);
 // module.exports = Course;
 
 async function getCoursesPage(page, subject, number, term) {
+
     const pageSize = 10;
 
     // Build a query object based on provided filters
@@ -71,7 +74,6 @@ async function getCoursesPage(page, subject, number, term) {
         pageSize: pageSize,
         count: count
     };
-}
 exports.getCoursesPage = getCoursesPage;
 
 /*
@@ -79,11 +81,11 @@ exports.getCoursesPage = getCoursesPage;
  * a Promise that resolves to the ID of the newly-created course entry.
  */
 async function insertNewCourse(course) {
-  try{
+  try {
     const newCourse = new Course(course);
     const result = await newCourse.save();
     return result._id;
-  }catch (err) {
+  } catch (err) {
     console.log("Error in insertNewUser:", err) // Log the entire error.
     return null;
   }
@@ -119,6 +121,7 @@ async function deleteCourseById(id) {
 exports.deleteCourseById = deleteCourseById
 
 async function getStudentsByCourseId(id) {
+  console.log("== getStudentsByCourseId()")
   const course = await Course.findById(id);
   if (!course) {
     return null
@@ -137,7 +140,7 @@ async function updateStudentByCourseId(id, add, remove) {
   if (add) {
     await Course.updateOne({ _id: id }, { $addToSet: { students: { $each: add } } });
   }
-  
+
   if (remove) {
     await Course.updateOne({ _id: id }, { $pullAll: { students: remove } });
   }
@@ -173,11 +176,39 @@ exports.getAssignmentsByCourseId = getAssignmentsByCourseId
 
 async function bulkInsertNewCourses(courses) {
   try {
-      const result = await Course.insertMany(courses);
-      return result.map(doc => doc._id);
-  } catch(err) {
-      console.error(err);
-      throw err;
+    const result = await Course.insertMany(courses);
+    return result.map(doc => doc._id);
+  } catch (err) {
+    console.error(err);
+    throw err;
   }
 }
 exports.bulkInsertNewCourses = bulkInsertNewCourses;
+
+// Get all courses where the instructor id is a match
+async function getCoursesByInstructorId(id) {
+  id = new ObjectId(id);
+  try {
+    const courses = await Course.find({ instructorId: id });
+    console.log("== courses:", courses);
+    return courses;
+  } catch (err) {
+    console.log(`Error getting courses by instructor id: ${err}`);
+    return null;
+  }
+}
+exports.getCoursesByInstructorId = getCoursesByInstructorId;
+
+// Get all courses where the student's id is in the students array
+async function getCoursesByStudentId(id) {
+  id = new ObjectId(id);
+  try {
+    const courses = await Course.find({ students: id });
+    console.log("== courses:", courses);
+    return courses;
+  } catch (err) {
+    console.log(`Error getting courses by student id: ${err}`);
+    return null;
+  }
+}
+exports.getCoursesByStudentId = getCoursesByStudentId;
