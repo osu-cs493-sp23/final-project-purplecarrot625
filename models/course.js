@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const User = require('../models/user');
+const {User} = require('./user');
+const { Assignment } = require('./assignment');
 
 const CourseSchema = new Schema({
   subject: {
@@ -27,7 +28,9 @@ const CourseSchema = new Schema({
     type: Schema.Types.ObjectId
   }],
   assignments:[{
-    type: Schema.Types.ObjectId
+    type: Schema.Types.ObjectId,
+    ref: 'Assignment',
+    required: true
   }]
 });
 
@@ -56,6 +59,7 @@ async function getCoursesPage(page, subject, number, term) {
     const offset = (page - 1) * pageSize;
 
     const results = await Course.find(query)
+        .select('-students -assignments') 
         .sort({ _id: 1 })
         .skip(offset)
         .limit(pageSize);
@@ -94,19 +98,22 @@ exports.insertNewCourse = insertNewCourse
  * specified ID exists, the returned Promise will resolve to null.
  */
 async function getCourseById(id) {
-  const result = await Course.findById(id);
+  const result = await Course.findById(id).select('-students -assignments');
   return result;
 }
 exports.getCourseById = getCourseById
 
 async function updateCourseById(id, requestedBody) {
+  delete requestedBody.students;
+  delete requestedBody.assignments;
+
   const result = await Course.findByIdAndUpdate(id, requestedBody, { lean: true });
   return result;
 }
 exports.updateCourseById = updateCourseById
 
 async function deleteCourseById(id) {
-  const result = await Course.findByIdAndUpdate(id);
+  const result = await Course.findByIdAndRemove(id);
   return result;
 }
 exports.deleteCourseById = deleteCourseById
@@ -139,27 +146,28 @@ async function updateStudentByCourseId(id, add, remove) {
 }
 exports.updateStudentByCourseId = updateStudentByCourseId
 
-/**
- * TODO
- */
 async function getRosterByCourseId(id) {
   const course = await Course.findById(id);
   if (!course) {
     return null
   }
-  // Get the students
-  const result = await User.find({ _id: { $in: course.assignments } });
-  return result
+
+  const students = await User.find({ _id: { $in: course.students } });
+  let csv = '';
+  students.forEach(student => {
+    csv += `${student._id},${student.name},${student.email}\n`;
+  });
+  return csv;
 }
-exports.getRosterByCourseId = getRosterByCourseId
+exports.getRosterByCourseId = getRosterByCourseId;
 
 async function getAssignmentsByCourseId(id) {
   const course = await Course.findById(id);
   if (!course) {
     return null
   }
-  const result = await User.find({ _id: { $in: course.assignments } });
-  return result
+  const assignmentsList = await Assignment.find({ courseId: id });
+  return assignmentsList
 }
 exports.getAssignmentsByCourseId = getAssignmentsByCourseId
 
