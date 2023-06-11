@@ -25,6 +25,7 @@ const router = Router()
 const { ObjectId } = require('mongodb');
 const { default: mongoose } = require('mongoose');
 
+const { getUserByEmail } = require("../models/user")
 /*
  * GET /courses - Route to return a paginated list of courses.
  */
@@ -115,11 +116,13 @@ router.patch('/:id', requireAuthentication, async (req, res, next) => {
         return res.status(404).json({ error: "Course not found" });
       }
     const course = await getCourseById(courseId);
-    if (req.user.role === "admin" || req.user.role === "instructor" && req.user._id.toString() === course.instructorId.toString()) {
+    const user = await getUserByEmail(req.user.email)
+    if (req.user.role === "admin" || req.user.role === "instructor" && user._id.toString() === course.instructorId.toString()) {
         try {
-            const course = await updateCourseById(courseId, req.body)
-            if (course) {
-                res.status(200).send(course)
+            const result = await updateCourseById(courseId, req.body)
+            const updatedCourse = await getCourseById(courseId);
+            if (result) {
+                res.status(200).send(updatedCourse)
             } else {
                 res.status(404).send({
                     error: "Request course not found."
@@ -173,7 +176,8 @@ router.get('/:id/students', requireAuthentication, async (req, res, next) => {
         return res.status(404).json({ error: "Course not found" });
       }
     const course = await getCourseById(courseId);
-    if (req.user.role === "admin" || req.user.role === "instructor" && req.user._id.toString() === course.instructorId.toString()) {
+    const user = await getUserByEmail(req.user.email)
+    if (req.user.role === "admin" || req.user.role === "instructor" && user._id.toString() === course.instructorId.toString()) {
         try {
             const studentList = await getStudentsByCourseId(courseId)
             if (studentList) {
@@ -213,7 +217,8 @@ router.post('/:id/students', requireAuthentication, async (req, res, next) => {
         return res.status(400).json({ error: 'The request body was either not present or did not contain the fields described above.' });
     }
     const course = await getCourseById(courseId);
-    if (req.user.role === "admin" || req.user.role === "instructor" && req.user._id.toString() === course.instructorId.toString()) {
+    const user = await getUserByEmail(req.user.email)
+    if (req.user.role === "admin" || req.user.role === "instructor" && user._id.toString() === course.instructorId.toString()) {
         try {
             const result = await updateStudentByCourseId(courseId, add, remove)
             if (result) {
@@ -240,7 +245,8 @@ router.get('/:id/roster', requireAuthentication, async (req, res, next) => {
         return res.status(404).json({ error: "Course not found" });
       }
     const course = await getCourseById(courseId);
-    if (req.user.role === "admin" || req.user.role === "instructor" && req.user._id.toString() === course.instructorId.toString()) {
+    const user = await getUserByEmail(req.user.email)
+    if (req.user.role === "admin" || req.user.role === "instructor" && user._id.toString() === course.instructorId.toString()) {
         try {
             const csv = await getRosterByCourseId(req.params.id);
             if (csv) {

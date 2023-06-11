@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const {User} = require('./user');
 const { Assignment } = require('./assignment');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 const CourseSchema = new Schema({
   subject: {
@@ -74,6 +75,7 @@ async function getCoursesPage(page, subject, number, term) {
         pageSize: pageSize,
         count: count
     };
+  }
 exports.getCoursesPage = getCoursesPage;
 
 /*
@@ -109,8 +111,8 @@ async function updateCourseById(id, requestedBody) {
   delete requestedBody.students;
   delete requestedBody.assignments;
 
-  const result = await Course.findByIdAndUpdate(id, requestedBody, { lean: true });
-  return result;
+  const result = await Course.findByIdAndUpdate(id, requestedBody, { lean: true })
+  return result
 }
 exports.updateCourseById = updateCourseById
 
