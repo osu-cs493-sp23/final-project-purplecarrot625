@@ -25,6 +25,8 @@ const mongoDBUri = process.env.MONGO_DB_URI || 'mongodb://root:root123@localhost
 const mongoCreateUser = process.env.MONGO_CREATE_USER;
 const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD;
 
+console.log(mongoDBUri)
+
 async function main() {
   try {
     await mongoose.connect(mongoDBUri, {

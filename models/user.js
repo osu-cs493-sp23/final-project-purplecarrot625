@@ -35,7 +35,7 @@ exports.User = User;
 /*
  * Insert a new User into the DB.
  */
-exports.insertNewUser = async function (user) {
+const insertNewUser = async function (user) {
   try {
     const hash = await bcrypt.hash(user.password, 8);
     console.log(hash)
@@ -72,8 +72,16 @@ async function getUserByEmail (email, includePassword) {
   }
 exports.getUserByEmail = getUserByEmail;
 
-exports.validateUser = async function (email, password) {
+async function validateUser(email, password) {
   const user = await getUserByEmail(email, true);
   return user && await bcrypt.compare(password, user.password);
 };
 
+module.exports = {
+  UserSchema,
+  User,
+  insertNewUser,
+  getUserById,
+  getUserByEmail,
+  validateUser,
+};
