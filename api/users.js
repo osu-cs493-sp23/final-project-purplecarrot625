@@ -11,13 +11,22 @@ const {
     validateUser,
     getUserByEmail
 } = require('../models/user')
-const { generateAuthToken, requireAuthentication } = require("../lib/auth")
+const { generateAuthToken, requireAuthentication, getLogin } = require("../lib/auth")
 
 const { getCoursesByInstructorId, getCoursesByStudentId } = require('../models/course')
 
 exports.router = router;
 
-router.post('/', async function (req, res) {
+router.post('/', getLogin, async function (req, res) {
+    if (req.body.role == 'instructor' || req.body.role == 'admin') {
+        console.log("Your role is:", req.user.role)
+        if (req.user && req.user.role != 'admin' || req.user == null) {
+            return res.status(403).send({
+                error: 'Unauthorized to create new instructor or admin.'
+            })
+        }
+    }
+
     try {
       const id = await insertNewUser(req.body);
       console.log(id);
@@ -25,7 +34,7 @@ router.post('/', async function (req, res) {
         res.status(201).send({ _id: id });
       } else {
         res.status(400).send({
-          error: "Request body does not contain a valid User."
+          error: "Request body does not contain a valid User or the email has been registered."
         });
       }
     } catch(err) {
