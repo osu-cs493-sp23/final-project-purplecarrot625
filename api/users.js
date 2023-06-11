@@ -19,7 +19,7 @@ exports.router = router;
 
 router.post('/', getLogin, async function (req, res) {
     if (req.body.role == 'instructor' || req.body.role == 'admin') {
-        console.log("Your role is:", req.user.role)
+        // console.log("Your role is:", req.user.role)
         if (req.user && req.user.role != 'admin' || req.user == null) {
             return res.status(403).send({
                 error: 'Unauthorized to create new instructor or admin.'
