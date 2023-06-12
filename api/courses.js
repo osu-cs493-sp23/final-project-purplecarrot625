@@ -176,6 +176,9 @@ router.get('/:id/students', requireAuthentication, async (req, res, next) => {
         return res.status(404).json({ error: "Course not found" });
       }
     const course = await getCourseById(courseId);
+    if (course == null) {
+        return res.status(404).json({ error: "Course not found" });
+    }
     const user = await getUserByEmail(req.user.email)
     if (req.user.role === "admin" || req.user.role === "instructor" && user._id.toString() === course.instructorId.toString()) {
         try {
@@ -185,7 +188,6 @@ router.get('/:id/students', requireAuthentication, async (req, res, next) => {
                     return {
                       name: student.name,
                       email: student.email,
-                      password: student.password,
                       role: student.role
                     }
                   });
@@ -217,6 +219,9 @@ router.post('/:id/students', requireAuthentication, async (req, res, next) => {
         return res.status(400).json({ error: 'The request body was either not present or did not contain the fields described above.' });
     }
     const course = await getCourseById(courseId);
+    if (course == null) {
+        return res.status(404).json({ error: "Course not found" });
+    }
     const user = await getUserByEmail(req.user.email)
     if (req.user.role === "admin" || req.user.role === "instructor" && user._id.toString() === course.instructorId.toString()) {
         try {
@@ -245,6 +250,9 @@ router.get('/:id/roster', requireAuthentication, async (req, res, next) => {
         return res.status(404).json({ error: "Course not found" });
       }
     const course = await getCourseById(courseId);
+    if (course == null) {
+        return res.status(404).json({ error: "Course not found" });
+    }
     const user = await getUserByEmail(req.user.email)
     if (req.user.role === "admin" || req.user.role === "instructor" && user._id.toString() === course.instructorId.toString()) {
         try {

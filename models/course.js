@@ -63,7 +63,7 @@ async function getCoursesPage(page, subject, number, term) {
     const offset = (page - 1) * pageSize;
 
     const results = await Course.find(query)
-        .select('-students -assignments') 
+        .select('-students -assignments')
         .sort({ _id: 1 })
         .skip(offset)
         .limit(pageSize);
@@ -118,6 +118,7 @@ exports.updateCourseById = updateCourseById
 
 async function deleteCourseById(id) {
   const result = await Course.findByIdAndRemove(id);
+  const deleteAssignments = await Assignment.deleteMany({ courseId: id });
   return result;
 }
 exports.deleteCourseById = deleteCourseById
