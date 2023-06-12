@@ -128,19 +128,28 @@ router.patch("/:id", requireAuthentication, async (req, res, next) => {
 // DELETE: /assignments/{id}
 router.delete("/:id", requireAuthentication, async (req, res) => {
   const assignmentId = req.params.id;
-  const courseId = await getCourseIdByAssignmentId(assignmentId);
-  const course = await getCourseById(courseId);
-  const instructorId = course.instructorId;
-
+  if (getAssignmentById(assignmentId) == null ){
+    return res.status(404).json({ error: "Assignment not found..." });
+  }
   if (!ObjectId.isValid(assignmentId)) {
     return res.status(404).json({ error: "Invalid assignment Id..." });
   }
+
+  const courseId = await getCourseIdByAssignmentId(assignmentId);
+  const course = await getCourseById(courseId);
+  if (course === null) {
+    return res.status(404).json({ error: "Assignment not found..." });
+  }
+  const instructorId = course.instructorId;
+
+
+
   // Only admin or instructor can delete the assignment.
   if (req.user.role == "admin" || req.user.role == "instructor" && instructorId == course.instructorId) {
     try {
       await deleteAssignment(assignmentId);
       await deleteSubmissionsOfAssignment(assignmentId)
-      res.status(204).json({ message: "Assignment deleted..." });
+      return res.status(204).send({ message: "Assignment deleted..." });
     } catch (err) {
       res.status(404).json({ error: err });
     }
@@ -191,7 +200,7 @@ router.get("/:id/submissions", requireAuthentication, async (req, res) => {
 router.post("/:id/submissions", upload.single("file"), async (req, res) => {
   console.log("--req.body--", req.body);
   console.log("--req.file--", req.file);
-
+  console.log("--req.user--", req.user);
   if (req.user.role !== "student") {
     return res.status(403).json({ error: "Only student can submit the assignment" });
   }
